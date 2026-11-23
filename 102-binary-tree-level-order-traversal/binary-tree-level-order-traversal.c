@@ -1,48 +1,43 @@
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     struct TreeNode *left;
- *     struct TreeNode *right;
- * };
- */
 
-/**
- * Return an array of arrays of size *returnSize.
- * The sizes of the arrays are returned as *returnColumnSizes array.
- * Note: Both returned array and *columnSizes array must be malloced, assume
- * caller calls free().
- */
+int** levelOrder(struct TreeNode* root, int* returnSize,
+                 int** returnColumnSizes) {
 
-void trace_depth(struct TreeNode* n, int depth, int* cmp) {
-    if (!n)
-        return;
-    if (++depth > *cmp)
-        *cmp = depth;
-    trace_depth(n->left, depth, cmp);
-    trace_depth(n->right, depth, cmp);
-}
-
-void trace(struct TreeNode* n, int depth, int** a, int* id) {
-    if (!n)
-        return;
-
-    if (!id[depth])
-        a[depth] = (int*)malloc(sizeof(int) * ((depth > 10) ? 1024 : (1 << depth)));
-    a[depth][id[depth]++] = n->val;
-    trace(n->left, depth + 1, a, id);
-    trace(n->right, depth + 1, a, id);
-}
-
-int** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes) {
     *returnSize = 0;
-    if (!root)
+    *returnColumnSizes = NULL;
+
+    if (root == NULL)
         return NULL;
 
-    trace_depth(root, 0, returnSize);
-    int** result = (int**)malloc(sizeof(int*) * (*returnSize));
-    *returnColumnSizes = (int*)calloc(*returnSize, sizeof(int));
-    trace(root, 0, result, *returnColumnSizes);
+    int** result = malloc(2000 * sizeof(int*));
+    *returnColumnSizes = malloc(2000 * sizeof(int));
+
+    struct TreeNode* queue[2000];
+    int front = 0, rear = 0;
+
+    queue[rear++] = root;
+
+    while (front < rear) {
+
+        int size = rear - front;
+
+        result[*returnSize] = malloc(size * sizeof(int));
+        (*returnColumnSizes)[*returnSize] = size;
+
+        for (int i = 0; i < size; i++) {
+
+            struct TreeNode* temp = queue[front++];
+
+            result[*returnSize][i] = temp->val;
+
+            if (temp->left)
+                queue[rear++] = temp->left;
+
+            if (temp->right)
+                queue[rear++] = temp->right;
+        }
+
+        (*returnSize)++;
+    }
 
     return result;
 }
