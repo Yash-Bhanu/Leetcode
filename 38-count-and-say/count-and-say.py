@@ -1,19 +1,18 @@
 class Solution:
     def countAndSay(self, n: int) -> str:
         res = "1"
-        
-        for _ in range(n - 1):
-            next_res = []
-            i = 0
-            
-            while i < len(res):
-                count = 1
-                while i + 1 < len(res) and res[i] == res[i + 1]:
-                    i += 1
-                    count += 1
-                next_res.append(f"{count}{res[i]}")
-                i += 1
-                
-            res = "".join(next_res)
-            
+        for _ in range(1, n):
+            res = self.build_next(res)
         return res
+
+    def build_next(self, s: str) -> str:
+        result = ""
+        count = 1
+        for i in range(1, len(s)):
+            if s[i] == s[i - 1]:
+                count += 1
+            else:
+                result += str(count) + s[i - 1]
+                count = 1
+        result += str(count) + s[-1]
+        return result
