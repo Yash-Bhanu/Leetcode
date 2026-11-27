@@ -1,52 +1,45 @@
 class Solution:
-    def solveSudoku(self, board: list[list[str]]) -> None:
-        n, N = 3, 9
-        rows = [[0] * (N + 1) for _ in range(N)]
-        cols = [[0] * (N + 1) for _ in range(N)]
-        boxes = [[0] * (N + 1) for _ in range(N)]
-        sudokuSolved = False
+    def solveSudoku(self, board: List[List[str]]) -> None:
+        used_row = [set() for _ in range(9)]
+        used_col = [set() for _ in range(9)]
+        used_box = [set() for _ in range(9)]
+        for i in range(9):
+            for j in range(9):
+                if board[i][j] != ".":
+                    val = int(board[i][j])
+                    used_row[i].add(val)
+                    used_col[j].add(val)
+                    box_id = (i // 3) * 3 + (j // 3)
+                    used_box[box_id].add(val)
 
-        def couldPlace(d, row, col):
-            idx = (row // n) * n + col // n
-            return rows[row][d] + cols[col][d] + boxes[idx][d] == 0
+        def is_valid(i, j, val):
+            box_id = (i // 3) * 3 + (j // 3)
+            return val not in used_box[box_id] and val not in used_row[i] and val not in used_col[j]
 
-        def placeNumber(d, row, col):
-            idx = (row // n) * n + col // n
-            rows[row][d] += 1
-            cols[col][d] += 1
-            boxes[idx][d] += 1
-            board[row][col] = str(d)
+        def dfs(i, j):
+            if i == 9:
+                return True
+            next_i = next_j = 0
+            if j < 8:
+                next_i, next_j = i, j+1
+            elif j == 8:
+                next_i, next_j = i+1, 0
+            if board[i][j] != ".":
+                return dfs(next_i, next_j)
 
-        def removeNumber(d, row, col):
-            idx = (row // n) * n + col // n
-            rows[row][d] -= 1
-            cols[col][d] -= 1
-            boxes[idx][d] -= 1
-            board[row][col] = '.'
-
-        def placeNextNumbers(row, col):
-            nonlocal sudokuSolved
-            if row == N - 1 and col == N - 1:
-                sudokuSolved = True
-            elif col == N - 1:
-                backtrack(row + 1, 0)
-            else:
-                backtrack(row, col + 1)
-
-        def backtrack(row, col):
-            nonlocal sudokuSolved
-            if board[row][col] == '.':
-                for d in range(1, 10):
-                    if couldPlace(d, row, col):
-                        placeNumber(d, row, col)
-                        placeNextNumbers(row, col)
-                        if not sudokuSolved:
-                            removeNumber(d, row, col)
-            else:
-                placeNextNumbers(row, col)
-
-        for i in range(N):
-            for j in range(N):
-                if board[i][j] != '.':
-                    placeNumber(int(board[i][j]), i, j)
-        backtrack(0, 0)
+            box_id = (i // 3) * 3 + (j // 3)
+            for x in range(1, 10):
+                if is_valid(i, j, x):
+                    board[i][j] = str(x)
+                    used_row[i].add(x)
+                    used_col[j].add(x)
+                    used_box[box_id].add(x)
+                    if dfs(next_i, next_j):
+                        return True
+                    board[i][j] = "."
+                    used_row[i].remove(x)
+                    used_col[j].remove(x)
+                    used_box[box_id].remove(x)
+            return False
+        dfs(0, 0)
+        return
